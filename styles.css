@@ -94,7 +94,7 @@ a.btn:focus{
   filter:saturate(1.08);
 }
 .section{padding:2.2rem 0}
-.intro-text{max-width:76ch;margin-right:50px;margin-left: 50px;color:#42515d;line-height:1.8}
+.intro-text{max-width:76ch;margin-right:5px;margin-left: 5px;color:#42515d;line-height:1.8}
 .cards{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:1rem;overflow:visible}
 .card{position:static;display:flex;flex-direction:column;min-height:300px;padding:1.2rem;overflow:visible;background:var(--card);border:1px solid rgba(23,35,46,.08);border-radius:8px;flex:1 1 260px;max-width:340px;cursor:default;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(27,58,79,.1);border-color:rgba(57,122,168,.26)}
