@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>News Admin — EverRising Dance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="news-admin-page">
+  <main class="news-admin-shell">
+    <header class="news-admin-header">
+      <a class="news-admin-brand" href="index.html">
+        <img src="logo.png" alt="">
+        <span>EverRising Dance</span>
+      </a>
+      <a class="news-admin-view" href="news.html">View news</a>
+    </header>
+
+    <h1>News Admin</h1>
+    <p class="news-admin-intro">Create an article, then download an updated news page to upload to the website.</p>
+
+    <section class="news-admin-panel" id="password-panel">
+      <h2 id="password-heading">Create local password</h2>
+      <p class="news-admin-note">This password only locks this admin page in this browser. It does not protect a published website.</p>
+      <form id="password-form" class="news-admin-form">
+        <label for="admin-password">Password</label>
+        <input id="admin-password" type="password" minlength="8" autocomplete="new-password" required>
+        <div id="password-confirm-wrap">
+          <label for="admin-password-confirm">Confirm password</label>
+          <input id="admin-password-confirm" type="password" minlength="8" autocomplete="new-password">
+        </div>
+        <button type="submit">Continue</button>
+        <p id="password-status" class="news-admin-status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="news-admin-panel hidden" id="editor-panel">
+      <div class="news-admin-source">
+        <label for="news-file">Choose the current news.html</label>
+        <input id="news-file" type="file" accept=".html,text/html">
+        <p id="source-status" class="news-admin-status" aria-live="polite">Select your current news.html to load its existing articles.</p>
+      </div>
+
+      <form id="article-form" class="news-admin-form">
+        <fieldset id="article-fields" disabled>
+          <label for="article-title">Headline</label>
+          <input id="article-title" type="text" required>
+
+          <label for="article-summary">Summary</label>
+          <textarea id="article-summary" rows="3" required></textarea>
+
+          <label for="article-description">Long description</label>
+          <textarea id="article-description" rows="7" required></textarea>
+
+          <div class="news-admin-images">
+            <label for="tile-image">Small tile image<input id="tile-image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+            <label for="popup-image">Large popup image<input id="popup-image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          </div>
+          <p class="news-admin-note">Choose optimized JPG, PNG, or WebP images under 2 MB each. Images are embedded in the downloaded news.html.</p>
+          <button id="download-article" type="submit">Add article and download news.html</button>
+        </fieldset>
+        <p id="article-status" class="news-admin-status" aria-live="polite"></p>
+      </form>
+
+      <section class="news-admin-saved">
+        <h2>Articles in this file</h2>
+        <ul id="saved-articles"></ul>
+      </section>
+    </section>
+  </main>
+  <script src="admin.js" defer></script>
+</body>
+</html>

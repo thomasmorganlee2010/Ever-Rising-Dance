@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Book — EverRising Dance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="EverRising Dance home">
+        <img src="logo.png" class="logo" alt="EverRising Dance logo">
+        <span class="brand-name">EverRising Dance</span>
+        
+      </a>
+
+      <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+
+      <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="classes.html">Classes</a></li>
+          <li><a href="book.html">Book</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="policies.html">Policies</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Book a Class</h1>
+
+
+    <div class="booking-form">
+        <form id="book-form" action="https://api.web3forms.com/submit" method="post">
+          <input type="hidden" name="access_key" value="705772ab-e2ec-4514-906a-fd97e6175360">
+          <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off">
+          
+          
+          <label for="parent-name">Name of Parent/Guardian</label>
+          <input id="parent-name" name="name" type="text" required>
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required>
+
+          <input id="booking-message" name="message" type="hidden">
+
+          <label for="class">Class</label>
+          <select id="class" required>
+            <option value="" selected disabled>Choose a class</option>
+            <option>Junior Jazz (Ages 5-11)</option>
+            <option>Junior Commercial (Ages 5-11)</option>
+            <option>Teen Jazz (Ages 12+)</option>
+            <option>Teen Commercial (Ages 12+)</option>
+            <option>Junior Jazz + Commercial (Ages 5-11)</option>
+            <option>Teen Jazz + Commercial (Ages 12+)</option>
+          </select>
+
+          <label for="notes">Notes</label>
+          <textarea id="notes" rows="5" placeholder="Add any notes about the booking."></textarea>
+
+          <div class="policy-list">
+            <label><input type="checkbox" required> I have read the <a href="Ever Rising Safeguarding Policy.pdf" target="_blank" rel="noopener">Safeguarding Policy</a>.</label>
+            <label><input type="checkbox" required> I have read the <a href="Data Protection and GDPR Policy.pdf" target="_blank" rel="noopener">Data Protection &amp; GDPR Policy</a>.</label>
+            <label><input type="checkbox"> I have read the <a href="Video and Photography Policy.pdf" target="_blank" rel="noopener">Photography &amp; Video Policy</a> and consent to images of my child being used for EverRising publicity.</label>
+            <p class="small-note">Read all policies on the <a href="policies.html">Policies page</a>.</p>
+            <label>All Students and Parents must adhere to the <a href="policies.html">Code of Conduct</a>.</label>
+          </div>
+
+          <button class="btn" type="submit">Request Booking</button>
+        </form>
+        <div id="book-result" class="hidden" aria-live="polite"></div>
+      </div>
+
+    
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Contact: <a href="mailto:everrisingdance@outlook.com">everrisingdance@outlook.com</a></p>
+      <p>&copy; 2026 Ever Rising Dance Ltd. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>News — EverRising Dance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="EverRising Dance home">
+        <img src="logo.png" class="logo" alt="EverRising Dance logo">
+        <span class="brand-name">EverRising Dance</span>
+        
+      </a>
+
+      <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+
+      <nav id="primary-nav" class="primary-nav" aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="classes.html">Classes</a></li>
+          <li><a href="book.html">Book</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="policies.html">Policies</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>News</h1>
+
+    <!-- Embed JSON here — edit this block to add new items easily -->
+    <script id="news-data" type="application/json">
+    [
+      {
+        "id": 1,
+        "title": "New Classes!",
+        "date": "2026-11-09",
+        "summary": "Our classes are starting on the 5th of October! Book your place now.",
+        "slug": "news-item-1",
+        "image": "postersmall.jpg",
+        "heroImage": "image2.jpeg",
+        "content": "<p>New classes are starting on the 5th of October at Fairfield High School for Girls, Book your place now!</p>"
+      }
+    ]
+    </script>
+
+    <div id="news-list" class="news-list" aria-live="polite"></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Contact: <a href="mailto:everrisingdance@outlook.com">everrisingdance@outlook.com</a></p>
+      <p>&copy; 2026 Ever Rising Dance Ltd. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
