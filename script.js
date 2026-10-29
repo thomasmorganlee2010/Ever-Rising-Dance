@@ -39,14 +39,25 @@
     if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth',block:'start'}); }
   });
 
-  // NEWS RENDERING — reads the shared news.json file
+  // NEWS RENDERING — retrieves only published articles from Google Apps Script
   let newsData = [];
 
   function createNewsMedia(src, isVideo, className, alt, controls){
+    const driveId = getDriveFileId(src);
+    if(isVideo && driveId){
+      const frame = doc.createElement('iframe');
+      frame.className = className;
+      frame.src = `https://drive.google.com/file/d/${encodeURIComponent(driveId)}/preview`;
+      frame.title = alt;
+      frame.allow = 'autoplay; fullscreen; picture-in-picture';
+      return frame;
+    }
     const media = doc.createElement(isVideo ? 'video' : 'img');
     media.className = className;
+    media.src = !isVideo && driveId
+      ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w1600`
+      : src;
     if(isVideo){
-      media.src = src;
       media.preload = 'metadata';
       media.playsInline = true;
       if(controls){
@@ -57,10 +68,21 @@
         media.autoplay = true;
       }
     }else{
-      media.src = src;
       media.alt = alt;
     }
     return media;
+  }
+
+  function getDriveFileId(src){
+    if(!src) return '';
+    try{
+      const mediaUrl = new URL(src,window.location.href);
+      if(!/(^|\.)drive\.google\.com$/i.test(mediaUrl.hostname)) return '';
+      const match = mediaUrl.pathname.match(/\/file\/d\/([^/]+)/);
+      return match ? match[1] : mediaUrl.searchParams.get('id') || '';
+    }catch(_error){
+      return '';
+    }
   }
 
   function isVideoMedia(item, mediaSrc){
@@ -73,6 +95,13 @@
     if(!container) return;
     container.innerHTML = '';
     const list = data.slice(0, limit || data.length);
+    if(!list.length){
+      const emptyMessage = doc.createElement('p');
+      emptyMessage.className = 'news-empty';
+      emptyMessage.textContent = 'There are no published news articles yet. Please check back soon.';
+      container.appendChild(emptyMessage);
+      return;
+    }
     list.forEach(item=>{
       const el = doc.createElement('article');
       el.className = 'news-item';
@@ -113,24 +142,69 @@
   const previewEl = doc.getElementById('news-preview');
   const allNewsEl = doc.getElementById('news-list');
   if(previewEl || allNewsEl){
-    fetch('news.json', {cache:'no-store'})
-      .then(response=>{
-        if(!response.ok) throw new Error(`Could not load news.json (HTTP ${response.status}).`);
-        return response.json();
-      })
-      .then(data=>{
-        if(!Array.isArray(data)) throw new Error('news.json must contain a list of articles.');
-        newsData = data;
+    const config = window.ER_DANCE_NEWS_CONFIG || {};
+    const apiUrl = config.appsScriptUrl || '';
+    const loading = doc.createElement('p');
+    loading.className = 'news-loading';
+    loading.textContent = apiUrl ? 'Loading news...' : 'News is not configured yet.';
+    if(previewEl) previewEl.replaceChildren(loading.cloneNode(true));
+    if(allNewsEl) allNewsEl.replaceChildren(loading.cloneNode(true));
+    function fetchNews(){
+      return new Promise((resolve,reject)=>{
+        if(!apiUrl){
+          reject(new Error('Add the Google Apps Script web app URL to news-config.js.'));
+          return;
+        }
+        const callbackName = `__erDanceNews_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const script = doc.createElement('script');
+        let timeout;
+        function cleanup(){
+          window.clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+        }
+        window[callbackName] = result=>{
+          cleanup();
+          if(!result || result.ok !== true){
+            reject(new Error(result?.error?.message || 'The news service returned an error.'));
+            return;
+          }
+          if(!Array.isArray(result.data)){
+            reject(new Error('The news service returned an invalid article list.'));
+            return;
+          }
+          resolve(result.data);
+        };
+        script.onerror = ()=>{
+          cleanup();
+          reject(new Error('The Google Apps Script news service could not be reached.'));
+        };
+        timeout = window.setTimeout(()=>{
+          cleanup();
+          reject(new Error('The Google Apps Script news service took too long to respond.'));
+        },12000);
+        const url = new URL(apiUrl);
+        url.searchParams.set('action','articles');
+        url.searchParams.set('callback',callbackName);
+        script.src = url.toString();
+        doc.head.appendChild(script);
+      });
+    }
+    const newsRequest = fetchNews();
+    newsRequest.then(data=>{
+        newsData = data.filter(article=>article && article.published !== false)
+          .sort((left,right)=>(Date.parse(right.date) || 0)-(Date.parse(left.date) || 0));
         if(previewEl) renderNews(previewEl, newsData, 3);
         if(allNewsEl) renderNews(allNewsEl, newsData);
       })
       .catch(error=>{
-        console.error('Could not load news.json', error);
-        if(allNewsEl){
+        console.error('Could not load published news', error);
+        if(previewEl || allNewsEl){
           const message = doc.createElement('p');
           message.className = 'news-load-error';
-          message.textContent = 'News could not be loaded. Open the site through GitHub Pages or a local web server.';
-          allNewsEl.replaceChildren(message);
+          message.textContent = 'News is temporarily unavailable. Please try again later.';
+          if(previewEl) previewEl.replaceChildren(message.cloneNode(true));
+          if(allNewsEl) allNewsEl.replaceChildren(message);
         }
       });
   }
@@ -168,7 +242,7 @@
       date.textContent = item.date || '';
       const description = doc.createElement('div');
       description.className = 'modal-description';
-      description.innerHTML = item.content || '';
+      description.appendChild(safeArticleContent(item.content || ''));
       body.append(close, heading, date, description);
       modal.append(mediaFrame, body);
       overlay.appendChild(modal);
@@ -185,6 +259,47 @@
       close.addEventListener('click', remove);
       doc.addEventListener('keydown', onKey);
       close.focus();
+    }
+
+    function safeArticleContent(content){
+      if(!/<[a-z][^>]*>/i.test(content)){
+        const fragment = doc.createDocumentFragment();
+        content.split(/\n\s*\n/).filter(Boolean).forEach(paragraph=>{
+          const element = doc.createElement('p');
+          paragraph.split('\n').forEach((line,index)=>{
+            if(index) element.appendChild(doc.createElement('br'));
+            element.appendChild(doc.createTextNode(line));
+          });
+          fragment.appendChild(element);
+        });
+        return fragment;
+      }
+      const parsed = new DOMParser().parseFromString(`<body>${content}</body>`,'text/html');
+      const allowed = new Set(['P','BR','STRONG','B','EM','I','UL','OL','LI','BLOCKQUOTE','A']);
+      function copyNode(node){
+        if(node.nodeType === Node.TEXT_NODE) return doc.createTextNode(node.textContent || '');
+        if(node.nodeType !== Node.ELEMENT_NODE) return doc.createDocumentFragment();
+        if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG'].includes(node.tagName)) return doc.createDocumentFragment();
+        const fragment = doc.createDocumentFragment();
+        Array.from(node.childNodes).forEach(child=>fragment.appendChild(copyNode(child)));
+        if(!allowed.has(node.tagName)) return fragment;
+        const element = doc.createElement(node.tagName.toLowerCase());
+        if(node.tagName === 'A'){
+          try{
+            const href = new URL(node.getAttribute('href') || '',window.location.href);
+            if(['http:','https:','mailto:'].includes(href.protocol)){
+              element.href = href.href;
+              element.rel = 'noopener noreferrer';
+              element.target = '_blank';
+            }
+          }catch(_error){}
+        }
+        element.appendChild(fragment);
+        return element;
+      }
+      const result = doc.createDocumentFragment();
+      Array.from(parsed.body.childNodes).forEach(child=>result.appendChild(copyNode(child)));
+      return result;
     }
 
   // attach read-more handlers (delegated)

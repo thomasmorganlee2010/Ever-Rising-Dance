@@ -116,6 +116,7 @@ a.btn:focus{
 .news-item{display:flex;flex-direction:column;gap:.6rem;padding:0;border-radius:8px;background:var(--white);box-shadow:0 8px 20px rgba(15,23,42,0.04);overflow:hidden;border:1px solid rgba(15,23,42,0.08);transition:transform .18s ease,box-shadow .18s ease}
 .news-item:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.1)}
 .news-thumb{width:100%;height:160px;object-fit:cover}
+.news-thumb iframe{display:block;width:100%;height:100%;border:0}
 .news-content{padding:1rem}
 
 @media (min-width:700px){
@@ -128,6 +129,7 @@ a.btn:focus{
 .news-overlay{position:fixed;inset:0;background:rgba(17,35,49,.68);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1200;padding:1rem}
 .news-modal{background:var(--white);width:100%;max-width:1000px;border-radius:9px;overflow:hidden;display:grid;grid-template-columns:1fr;max-height:90vh;box-shadow:0 28px 80px rgba(4,20,32,.28)}
 .news-modal .modal-image{width:100%;height:260px;object-fit:cover}
+.news-modal iframe.modal-image{height:min(65vh,680px);border:0}
 .news-modal .modal-body{padding:1rem;overflow:auto}
 .news-modal .modal-close{position:absolute;right:1rem;top:1rem;background:transparent;border:0;color:var(--text);font-size:1.5rem}
 
@@ -251,6 +253,7 @@ h1,h2,h3,h4,.hero-title{font-family:'Montserrat',system-ui,sans-serif}
 .news-admin-source{padding-bottom:1rem;border-bottom:1px solid rgba(15,23,42,.08)}
 .news-admin-form label,.news-admin-source label{display:block;margin:.85rem 0 .3rem;color:var(--muted);font-size:.9rem;font-weight:600}
 .news-admin-form input[type="text"],.news-admin-form input[type="password"],.news-admin-form textarea{display:block;width:100%;padding:.65rem;border:1px solid rgba(15,23,42,.12);border-radius:6px;background:var(--white);color:var(--text);font:inherit;line-height:1.45}
+.news-admin-source input[type="text"],.news-admin-source input[type="password"]{display:block;width:100%;padding:.65rem;border:1px solid rgba(15,23,42,.12);border-radius:6px;background:var(--white);color:var(--text);font:inherit;line-height:1.45}
 .news-admin-form textarea{resize:vertical}
 .news-admin-form input[type="file"]{display:block;width:100%;margin-top:.45rem;font:inherit}
 .news-admin-form fieldset{min-width:0;margin:0;padding:0;border:0}
@@ -493,6 +496,7 @@ main>h1::after,main.container>h1::after{
 .news-content .read-more{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem .85rem;border-radius:999px;background:linear-gradient(115deg,rgba(133,188,244,.2),rgba(243,182,76,.18));color:#24648f}
 .news-content .read-more:hover{text-decoration:none;filter:saturate(1.2)}
 .news-load-error{padding:1rem;color:#42515d;text-align:center}
+.news-empty{grid-column:1/-1;padding:1rem;color:#42515d;text-align:center}
 
 .news-overlay{
   overflow-y:auto;
@@ -532,6 +536,11 @@ main>h1::after,main.container>h1::after{
   max-height:min(65vh,680px);
   max-height:min(65dvh,680px);
   object-fit:contain;
+}
+
+.news-modal iframe.modal-image{
+  height:min(65vh,680px);
+  height:min(65dvh,680px);
 }
 
 .news-modal .modal-body{
@@ -590,6 +599,10 @@ main>h1::after,main.container>h1::after{
   .news-modal .modal-image{
     max-height:min(55vh,520px);
     max-height:min(55dvh,520px);
+  }
+  .news-modal iframe.modal-image{
+    height:min(55vh,520px);
+    height:min(55dvh,520px);
   }
 }
 

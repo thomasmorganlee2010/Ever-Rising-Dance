@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>News Admin — EverRising Dance</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="news-config.js"></script>
 </head>
 <body class="news-admin-page">
   <main class="news-admin-shell">
@@ -17,60 +18,19 @@
     </header>
 
     <h1>News Admin</h1>
-    <p class="news-admin-intro">Open news.json from your project folder. New articles are saved to that file; review and commit it to GitHub to publish.</p>
+    <p class="news-admin-intro">Manage news articles in the secure Google Apps Script editor. Staff actions are verified by the backend; the public website can only read published articles.</p>
 
-    <section class="news-admin-panel" id="password-panel">
-      <h2 id="password-heading">Create local password</h2>
-      <p class="news-admin-note">This password only locks this admin page in this browser. It does not protect a published website.</p>
-      <form id="password-form" class="news-admin-form">
-        <label for="admin-password">Password</label>
-        <input id="admin-password" type="password" minlength="8" autocomplete="new-password" required>
-        <div id="password-confirm-wrap">
-          <label for="admin-password-confirm">Confirm password</label>
-          <input id="admin-password-confirm" type="password" minlength="8" autocomplete="new-password">
-        </div>
-        <button type="submit">Continue</button>
-        <p id="password-status" class="news-admin-status" aria-live="polite"></p>
-      </form>
-    </section>
-
-    <section class="news-admin-panel hidden" id="editor-panel">
+    <section class="news-admin-panel" id="editor-panel">
       <div class="news-admin-source">
-        <button id="open-news-file" type="button">Open news.json</button>
-        <p id="source-status" class="news-admin-status" aria-live="polite">Open news.json from this project folder to load and update its articles.</p>
+        <a id="open-news-manager" class="btn" href="#">Open secure news manager</a>
+        <p id="manager-status" class="news-admin-status" aria-live="polite">Checking the news manager configuration...</p>
+        <p class="news-admin-note">The manager asks for the staff password. It is checked on Google's servers and is not included in this website's source code.</p>
       </div>
-
-      <form id="article-form" class="news-admin-form">
-        <fieldset id="article-fields" disabled>
-          <label for="article-title">Headline</label>
-          <input id="article-title" type="text" required>
-
-          <label for="article-summary">Summary</label>
-          <textarea id="article-summary" rows="3" required></textarea>
-
-          <label for="article-description">Long description</label>
-          <textarea id="article-description" rows="7" required></textarea>
-
-          <label for="media-type">News media type</label>
-          <select id="media-type">
-            <option value="image">Images</option>
-            <option value="video">Videos</option>
-          </select>
-
-          <div class="news-admin-images">
-            <label for="tile-media">Tile media<input id="tile-media" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-            <label for="popup-media">Popup media<input id="popup-media" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-          </div>
-          <p id="media-help" class="news-admin-note">Choose optimized JPG, PNG, or WebP images under 2 MB each. Media is embedded in news.json.</p>
-          <button id="save-article" type="submit">Add article to news.json</button>
-        </fieldset>
-        <p id="article-status" class="news-admin-status" aria-live="polite"></p>
-      </form>
-
-      <section class="news-admin-saved">
-        <h2>Articles in this file</h2>
-        <ul id="saved-articles"></ul>
-      </section>
+      <ul class="news-admin-note">
+        <li>Create, edit, publish, unpublish, or delete an article.</li>
+        <li>Upload image or video files directly from the manager.</li>
+        <li>Updates appear on the site the next time its news feed loads.</li>
+      </ul>
     </section>
   </main>
   <script src="admin.js" defer></script>

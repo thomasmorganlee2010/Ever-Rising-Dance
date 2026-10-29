@@ -1,0 +1,354 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --blue:#397aa8;
+      --navy:#18344b;
+      --gold:#f3b64c;
+      --muted:#71808d;
+      --surface:linear-gradient(135deg,rgba(255,255,255,.97),rgba(234,244,255,.96) 58%,rgba(255,247,229,.94));
+    }
+    *{box-sizing:border-box}
+    body{margin:0;padding:1rem;background:#f5f8fb;color:#263947;font:16px/1.5 Arial,sans-serif}
+    main{width:min(100%,820px);margin:1rem auto 3rem}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    a{color:var(--blue)}
+    h1{margin:.5rem 0;color:var(--navy);font-size:2rem}
+    h2{color:var(--navy);font-size:1.2rem}
+    .brand{color:var(--navy);font-weight:700;text-decoration:none}
+    .panel{margin:1rem 0;padding:1.25rem;border:1px solid rgba(57,122,168,.14);border-radius:14px;background:var(--surface);box-shadow:0 12px 30px rgba(27,58,79,.08)}
+    label{display:block;margin:.85rem 0 .3rem;color:var(--muted);font-size:.92rem;font-weight:700}
+    input,textarea,select{display:block;width:100%;padding:.7rem;border:1px solid rgba(15,23,42,.16);border-radius:7px;background:#fff;color:#263947;font:inherit}
+    textarea{resize:vertical}
+    button,.button{display:inline-block;margin:.75rem .4rem .1rem 0;padding:.7rem 1rem;border:0;border-radius:999px;background:linear-gradient(115deg,rgba(133,188,244,.35),rgba(243,182,76,.35));color:var(--navy);font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+    button:disabled{opacity:.55;cursor:wait}
+    .status{min-height:1.5em;color:var(--muted)}
+    .note{color:var(--muted);font-size:.9rem}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
+    .article{padding:.8rem 0;border-bottom:1px solid rgba(57,122,168,.14)}
+    .article-heading{display:flex;justify-content:space-between;gap:1rem}
+    .article-heading strong{color:var(--navy)}
+    .article-actions{white-space:nowrap}
+    .article-actions button{margin:.35rem .2rem .1rem 0;padding:.45rem .7rem}
+    .danger{background:#fce5e5;color:#8f2929}
+    .published{color:#267448}
+    .draft{color:#936012}
+    .hidden{display:none!important}
+    @media(max-width:580px){.grid{grid-template-columns:1fr}main{margin-top:0}.panel{padding:1rem}.article-heading{display:block}}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="brand" href="https://thomasmorganlee2010.github.io/Ever-Rising-Dance/">Ever Rising Dance</a>
+      <a href="https://thomasmorganlee2010.github.io/Ever-Rising-Dance/news.html">View public news</a>
+    </header>
+    <h1>News Manager</h1>
+    <p class="note">Sign in with the staff password. Published articles are public; do not enter private information.</p>
+
+    <section id="login-panel" class="panel">
+      <h2>Staff sign in</h2>
+      <form id="login-form">
+        <label for="password">Staff password</label>
+        <input id="password" type="password" autocomplete="current-password" required minlength="16">
+        <button id="login-button" type="submit">Sign in</button>
+      </form>
+      <p id="login-status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="manager-panel" class="hidden">
+      <div class="panel">
+        <div class="article-heading">
+          <div>
+            <h2 id="form-heading">Create an article</h2>
+            <p class="note">Tile and popup images/videos are stored in the owner's Google Drive and shared publicly.</p>
+          </div>
+          <button id="sign-out" type="button">Sign out</button>
+        </div>
+        <form id="article-form">
+          <input id="article-id" type="hidden">
+          <div class="grid">
+            <div>
+              <label for="article-title">Headline</label>
+              <input id="article-title" type="text" maxlength="120" required>
+            </div>
+            <div>
+              <label for="article-date">Publication date</label>
+              <input id="article-date" type="date" required>
+            </div>
+          </div>
+          <label for="article-summary">Summary</label>
+          <textarea id="article-summary" rows="3" maxlength="500" required></textarea>
+          <label for="article-content">Article text</label>
+          <textarea id="article-content" rows="7" maxlength="20000" required></textarea>
+          <label for="media-type">Media type</label>
+          <select id="media-type">
+            <option value="image">Images</option>
+            <option value="video">Videos</option>
+          </select>
+          <div class="grid">
+            <div>
+              <label for="tile-media">Tile media</label>
+              <input id="tile-media" type="file" accept="image/jpeg,image/png,image/webp" required>
+            </div>
+            <div>
+              <label for="popup-media">Popup media</label>
+              <input id="popup-media" type="file" accept="image/jpeg,image/png,image/webp" required>
+            </div>
+          </div>
+          <p id="media-help" class="note">JPG, PNG or WebP, up to 2 MB per image. Videos support MP4, WebM and MOV, up to 5 MB each.</p>
+          <label><input id="article-published" type="checkbox" checked style="display:inline;width:auto"> Publish this article</label>
+          <button id="save-button" type="submit">Create article</button>
+          <button id="cancel-edit" type="button" class="hidden">Cancel editing</button>
+        </form>
+        <p id="article-status" class="status" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="panel">
+        <div class="article-heading">
+          <h2>Articles</h2>
+          <button id="refresh-articles" type="button">Refresh list</button>
+        </div>
+        <div id="article-list" aria-live="polite"></div>
+        <p id="list-status" class="status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+  <script>
+    (function(){
+      'use strict';
+      var sessionToken = '';
+      var articles = [];
+      var loginPanel = document.getElementById('login-panel');
+      var managerPanel = document.getElementById('manager-panel');
+      var loginStatus = document.getElementById('login-status');
+      var articleStatus = document.getElementById('article-status');
+      var listStatus = document.getElementById('list-status');
+      var form = document.getElementById('article-form');
+      var mediaSelect = document.getElementById('media-type');
+      var tileInput = document.getElementById('tile-media');
+      var popupInput = document.getElementById('popup-media');
+
+      function serverCall(name){
+        var args = Array.prototype.slice.call(arguments,1);
+        return new Promise(function(resolve,reject){
+          var runner = google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(function(error){
+              reject(new Error(error && error.message ? error.message : 'The news manager could not complete this request.'));
+            });
+          runner[name].apply(runner,args);
+        });
+      }
+
+      function setMessage(element,message){ element.textContent = message || ''; }
+
+      function setLoggedIn(value){
+        loginPanel.classList.toggle('hidden',value);
+        managerPanel.classList.toggle('hidden',!value);
+      }
+
+      function renderArticles(){
+        var list = document.getElementById('article-list');
+        list.replaceChildren();
+        if(!articles.length){
+          setMessage(listStatus,'No articles yet. Create one using the form above.');
+          return;
+        }
+        setMessage(listStatus,'');
+        articles.forEach(function(article){
+          var row = document.createElement('div');
+          row.className = 'article';
+          var heading = document.createElement('div');
+          heading.className = 'article-heading';
+          var title = document.createElement('strong');
+          title.textContent = article.title || 'Untitled article';
+          var status = document.createElement('span');
+          status.className = article.published ? 'published' : 'draft';
+          status.textContent = article.published ? 'Published' : 'Draft';
+          heading.append(title,status);
+          var date = document.createElement('div');
+          date.className = 'note';
+          date.textContent = article.date || '';
+          var actions = document.createElement('div');
+          actions.className = 'article-actions';
+          var edit = document.createElement('button');
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click',function(){ editArticle(article); });
+          var remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'danger';
+          remove.textContent = 'Delete';
+          remove.addEventListener('click',function(){ deleteArticle(article); });
+          actions.append(edit,remove);
+          row.append(heading,date,actions);
+          list.appendChild(row);
+        });
+      }
+
+      function loadArticles(){
+        setMessage(listStatus,'Loading articles...');
+        serverCall('getAdminArticles',sessionToken).then(function(result){
+          articles = result || [];
+          renderArticles();
+        }).catch(function(error){
+          setMessage(listStatus,error.message);
+          if(/session has expired/i.test(error.message)) signOut(false);
+        });
+      }
+
+      function updateMediaInputs(){
+        var video = mediaSelect.value === 'video';
+        var accept = video ? 'video/mp4,video/webm,video/quicktime,.mov' : 'image/jpeg,image/png,image/webp';
+        tileInput.accept = accept;
+        popupInput.accept = accept;
+      }
+
+      function resetForm(){
+        form.reset();
+        document.getElementById('article-id').value = '';
+        document.getElementById('article-date').value = new Date().toISOString().slice(0,10);
+        document.getElementById('form-heading').textContent = 'Create an article';
+        document.getElementById('save-button').textContent = 'Create article';
+        document.getElementById('cancel-edit').classList.add('hidden');
+        tileInput.required = true;
+        popupInput.required = true;
+        updateMediaInputs();
+      }
+
+      function editArticle(article){
+        document.getElementById('article-id').value = article.id;
+        document.getElementById('article-title').value = article.title;
+        document.getElementById('article-date').value = article.date;
+        document.getElementById('article-summary').value = article.summary;
+        document.getElementById('article-content').value = article.content;
+        document.getElementById('article-published').checked = article.published;
+        mediaSelect.value = article.mediaType || 'image';
+        tileInput.value = '';
+        popupInput.value = '';
+        tileInput.required = false;
+        popupInput.required = false;
+        document.getElementById('form-heading').textContent = 'Edit article';
+        document.getElementById('save-button').textContent = 'Save changes';
+        document.getElementById('cancel-edit').classList.remove('hidden');
+        updateMediaInputs();
+        document.getElementById('article-title').focus();
+      }
+
+      function readAsBase64(file){
+        return new Promise(function(resolve,reject){
+          var reader = new FileReader();
+          reader.onload = function(){
+            var result = String(reader.result || '');
+            resolve(result.slice(result.indexOf(',') + 1));
+          };
+          reader.onerror = function(){ reject(new Error('Could not read ' + file.name + '.')); };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function validateFile(file){
+        var video = mediaSelect.value === 'video';
+        var allowed = video
+          ? ['video/mp4','video/webm','video/quicktime']
+          : ['image/jpeg','image/png','image/webp'];
+        var mov = video && /\.mov$/i.test(file.name);
+        if(allowed.indexOf(file.type) < 0 && !mov){
+          throw new Error(video ? 'Choose an MP4, WebM or MOV video.' : 'Choose a JPG, PNG or WebP image.');
+        }
+        var maximum = video ? 5 * 1024 * 1024 : 2 * 1024 * 1024;
+        if(file.size > maximum) throw new Error(file.name + ' is larger than the allowed ' + (video ? '5 MB' : '2 MB') + '.');
+      }
+
+      async function uploadFile(file){
+        validateFile(file);
+        var base64 = await readAsBase64(file);
+        var result = await serverCall('uploadNewsMedia',sessionToken,base64,file.name,file.type || 'video/quicktime');
+        return result.url;
+      }
+
+      async function saveArticle(event){
+        event.preventDefault();
+        var save = document.getElementById('save-button');
+        save.disabled = true;
+        setMessage(articleStatus,'Saving article...');
+        try{
+          var id = document.getElementById('article-id').value;
+          var existing = articles.find(function(item){ return item.id === id; }) || {};
+          var tileFile = tileInput.files[0];
+          var popupFile = popupInput.files[0];
+          if(!id && (!tileFile || !popupFile)) throw new Error('Choose both tile media and popup media.');
+          var image = tileFile ? await uploadFile(tileFile) : existing.image;
+          var heroImage = popupFile ? await uploadFile(popupFile) : existing.heroImage;
+          var article = {
+            id:id,
+            title:document.getElementById('article-title').value,
+            date:document.getElementById('article-date').value,
+            summary:document.getElementById('article-summary').value,
+            mediaType:mediaSelect.value,
+            image:image,
+            heroImage:heroImage,
+            content:document.getElementById('article-content').value,
+            published:document.getElementById('article-published').checked
+          };
+          await serverCall('saveNewsArticle',sessionToken,article);
+          resetForm();
+          setMessage(articleStatus,'Article saved.');
+          loadArticles();
+        }catch(error){
+          setMessage(articleStatus,error.message);
+        }finally{
+          save.disabled = false;
+        }
+      }
+
+      function deleteArticle(article){
+        if(!window.confirm('Delete "' + article.title + '" permanently? This cannot be undone.')) return;
+        setMessage(listStatus,'Deleting article...');
+        serverCall('deleteNewsArticle',sessionToken,article.id).then(function(){
+          setMessage(listStatus,'Article deleted.');
+          loadArticles();
+        }).catch(function(error){ setMessage(listStatus,error.message); });
+      }
+
+      function signOut(callServer){
+        var token = sessionToken;
+        sessionToken = '';
+        setLoggedIn(false);
+        resetForm();
+        if(callServer && token) serverCall('logoutNewsAdmin',token).catch(function(){});
+        setMessage(loginStatus,'You have signed out.');
+      }
+
+      document.getElementById('login-form').addEventListener('submit',function(event){
+        event.preventDefault();
+        var button = document.getElementById('login-button');
+        var password = document.getElementById('password').value;
+        document.getElementById('password').value = '';
+        button.disabled = true;
+        setMessage(loginStatus,'Checking password...');
+        serverCall('loginNewsAdmin',password).then(function(result){
+          sessionToken = result.token;
+          setLoggedIn(true);
+          setMessage(loginStatus,'');
+          loadArticles();
+        }).catch(function(error){ setMessage(loginStatus,error.message); })
+          .finally(function(){ button.disabled = false; });
+      });
+
+      document.getElementById('sign-out').addEventListener('click',function(){ signOut(true); });
+      document.getElementById('refresh-articles').addEventListener('click',loadArticles);
+      document.getElementById('cancel-edit').addEventListener('click',resetForm);
+      form.addEventListener('submit',saveArticle);
+      mediaSelect.addEventListener('change',updateMediaInputs);
+      document.getElementById('article-date').value = new Date().toISOString().slice(0,10);
+      updateMediaInputs();
+    })();
+  </script>
+</body>
+</html>
