@@ -17,7 +17,7 @@
     </header>
 
     <h1>News Admin</h1>
-    <p class="news-admin-intro">Create an article, then download an updated news page to upload to the website.</p>
+    <p class="news-admin-intro">Open news.json from your project folder. New articles are saved to that file; review and commit it to GitHub to publish.</p>
 
     <section class="news-admin-panel" id="password-panel">
       <h2 id="password-heading">Create local password</h2>
@@ -36,9 +36,8 @@
 
     <section class="news-admin-panel hidden" id="editor-panel">
       <div class="news-admin-source">
-        <label for="news-file">Choose the current news.html</label>
-        <input id="news-file" type="file" accept=".html,text/html">
-        <p id="source-status" class="news-admin-status" aria-live="polite">Select your current news.html to load its existing articles.</p>
+        <button id="open-news-file" type="button">Open news.json</button>
+        <p id="source-status" class="news-admin-status" aria-live="polite">Open news.json from this project folder to load and update its articles.</p>
       </div>
 
       <form id="article-form" class="news-admin-form">
@@ -52,12 +51,18 @@
           <label for="article-description">Long description</label>
           <textarea id="article-description" rows="7" required></textarea>
 
+          <label for="media-type">News media type</label>
+          <select id="media-type">
+            <option value="image">Images</option>
+            <option value="video">Videos</option>
+          </select>
+
           <div class="news-admin-images">
-            <label for="tile-image">Small tile image<input id="tile-image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-            <label for="popup-image">Large popup image<input id="popup-image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+            <label for="tile-media">Tile media<input id="tile-media" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+            <label for="popup-media">Popup media<input id="popup-media" type="file" accept="image/jpeg,image/png,image/webp" required></label>
           </div>
-          <p class="news-admin-note">Choose optimized JPG, PNG, or WebP images under 2 MB each. Images are embedded in the downloaded news.html.</p>
-          <button id="download-article" type="submit">Add article and download news.html</button>
+          <p id="media-help" class="news-admin-note">Choose optimized JPG, PNG, or WebP images under 2 MB each. Media is embedded in news.json.</p>
+          <button id="save-article" type="submit">Add article to news.json</button>
         </fieldset>
         <p id="article-status" class="news-admin-status" aria-live="polite"></p>
       </form>

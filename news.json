@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "title": "New Classes!",
+    "date": "2026-11-09",
+    "summary": "Our classes are starting on the 5th of October! Book your place now.",
+    "slug": "news-item-1",
+    "image": "postersmall.jpg",
+    "heroImage": "image2.jpeg",
+    "content": "<p>New classes are starting on the 5th of October at Fairfield High School for Girls, Book your place now!</p>"
+  }
+]

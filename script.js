@@ -34,12 +34,41 @@
     const a = e.target.closest('a');
     if(!a) return;
     const href = a.getAttribute('href');
-    if(!href || !href.startsWith('#')) return;
+    if(!href || href === '#' || !href.startsWith('#')) return;
     const target = doc.querySelector(href);
     if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth',block:'start'}); }
   });
 
-  // NEWS RENDERING — reads JSON from <script id="news-data"> when present
+  // NEWS RENDERING — reads the shared news.json file
+  let newsData = [];
+
+  function createNewsMedia(src, isVideo, className, alt, controls){
+    const media = doc.createElement(isVideo ? 'video' : 'img');
+    media.className = className;
+    if(isVideo){
+      media.src = src;
+      media.preload = 'metadata';
+      media.playsInline = true;
+      if(controls){
+        media.controls = true;
+      }else{
+        media.muted = true;
+        media.loop = true;
+        media.autoplay = true;
+      }
+    }else{
+      media.src = src;
+      media.alt = alt;
+    }
+    return media;
+  }
+
+  function isVideoMedia(item, mediaSrc){
+    return item.mediaType === 'video'
+      || Boolean(item.video || item.heroVideo)
+      || /\.(mp4|webm|mov)(?:[?#]|$)/i.test(mediaSrc || '');
+  }
+
   function renderNews(container, data, limit){
     if(!container) return;
     container.innerHTML = '';
@@ -47,71 +76,146 @@
     list.forEach(item=>{
       const el = doc.createElement('article');
       el.className = 'news-item';
-      const imgSrc = item.image || 'news-placeholder.jpg';
-      el.innerHTML = `<img src="${imgSrc}" class="news-thumb" alt="${item.title}">` +
-                     `<div class="news-content"><h3>${item.title}</h3><div class="muted">${item.date}</div><p>${item.summary}</p><p><a class="link read-more" href="#" data-id="${item.id||''}">Read more</a></p></div>`;
+      const mediaSrc = item.video || item.image;
+      const isVideo = isVideoMedia(item, mediaSrc);
+      const mediaFrame = doc.createElement('div');
+      mediaFrame.className = 'news-media-frame';
+      if(mediaSrc){
+        mediaFrame.appendChild(createNewsMedia(mediaSrc, isVideo, 'news-thumb', item.title || 'News image', false));
+      }else{
+        mediaFrame.classList.add('news-media-placeholder');
+        mediaFrame.setAttribute('aria-label', 'No news image provided');
+      }
+
+      const content = doc.createElement('div');
+      content.className = 'news-content';
+      const heading = doc.createElement('h3');
+      heading.textContent = item.title || '';
+      const date = doc.createElement('div');
+      date.className = 'muted';
+      date.textContent = item.date || '';
+      const summary = doc.createElement('p');
+      summary.textContent = item.summary || '';
+      const readMore = doc.createElement('a');
+      readMore.className = 'link read-more';
+      readMore.href = '#';
+      readMore.dataset.id = item.id == null ? '' : String(item.id);
+      readMore.textContent = 'Read more';
+      const readMoreRow = doc.createElement('p');
+      readMoreRow.appendChild(readMore);
+      content.append(heading, date, summary, readMoreRow);
+      el.append(mediaFrame, content);
       container.appendChild(el);
     });
   }
 
   // On index: preview latest 3
   const previewEl = doc.getElementById('news-preview');
-  const newsScript = doc.getElementById('news-data');
-  if(newsScript){
-    try{
-      const newsData = JSON.parse(newsScript.textContent);
-      const allNewsEl = doc.getElementById('news-list');
-      if(previewEl) renderNews(previewEl, newsData, 3);
-      if(allNewsEl) renderNews(allNewsEl, newsData);
-    }catch(err){ console.error('Invalid news JSON', err); }
+  const allNewsEl = doc.getElementById('news-list');
+  if(previewEl || allNewsEl){
+    fetch('news.json', {cache:'no-store'})
+      .then(response=>{
+        if(!response.ok) throw new Error(`Could not load news.json (HTTP ${response.status}).`);
+        return response.json();
+      })
+      .then(data=>{
+        if(!Array.isArray(data)) throw new Error('news.json must contain a list of articles.');
+        newsData = data;
+        if(previewEl) renderNews(previewEl, newsData, 3);
+        if(allNewsEl) renderNews(allNewsEl, newsData);
+      })
+      .catch(error=>{
+        console.error('Could not load news.json', error);
+        if(allNewsEl){
+          const message = doc.createElement('p');
+          message.className = 'news-load-error';
+          message.textContent = 'News could not be loaded. Open the site through GitHub Pages or a local web server.';
+          allNewsEl.replaceChildren(message);
+        }
+      });
   }
 
   // NEWS MODAL HANDLING
-    function openNewsModal(item){
-    // build overlay
-    const overlay = doc.createElement('div');
-    overlay.className = 'news-overlay';
-    overlay.innerHTML = `
-      <div class="news-modal" role="dialog" aria-modal="true">
-        <img src="${item.heroImage||item.image||'news-placeholder.jpg'}" class="modal-image" alt="${item.title}">
-        <div class="modal-body">
-          <button class="modal-close" aria-label="Close">×</button>
-          <h3>${item.title}</h3>
-          <div class="muted">${item.date}</div>
-          <div class="modal-description">${item.content || ''}</div>
-        </div>
-      </div>`;
-    doc.body.appendChild(overlay);
-    const close = overlay.querySelector('.modal-close');
-    function remove(){ doc.body.removeChild(overlay); doc.removeEventListener('keydown', onKey); }
-    function onKey(e){ if(e.key==='Escape') remove(); }
-    overlay.addEventListener('click',(e)=>{ if(e.target===overlay) remove(); });
-    close.addEventListener('click', remove);
-    doc.addEventListener('keydown', onKey);
-  }
+    function openNewsModal(item, trigger){
+      const overlay = doc.createElement('div');
+      overlay.className = 'news-overlay';
+      const modal = doc.createElement('div');
+      modal.className = 'news-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-label', item.title || 'News article');
+      const mediaFrame = doc.createElement('div');
+      mediaFrame.className = 'modal-media-frame';
+      const isVideo = isVideoMedia(item, item.heroVideo || item.video || item.heroImage || item.image);
+      const mediaSrc = isVideo
+        ? (item.heroVideo || item.video || item.heroImage || item.image)
+        : (item.heroImage || item.image);
+      if(mediaSrc){
+        mediaFrame.appendChild(createNewsMedia(mediaSrc, isVideo, 'modal-image', item.title || 'News image', true));
+      }
+
+      const body = doc.createElement('div');
+      body.className = 'modal-body';
+      const close = doc.createElement('button');
+      close.className = 'modal-close';
+      close.type = 'button';
+      close.setAttribute('aria-label', 'Close');
+      close.textContent = '×';
+      const heading = doc.createElement('h3');
+      heading.textContent = item.title || '';
+      const date = doc.createElement('div');
+      date.className = 'muted';
+      date.textContent = item.date || '';
+      const description = doc.createElement('div');
+      description.className = 'modal-description';
+      description.innerHTML = item.content || '';
+      body.append(close, heading, date, description);
+      modal.append(mediaFrame, body);
+      overlay.appendChild(modal);
+      doc.body.appendChild(overlay);
+      function remove(){
+        const video = overlay.querySelector('video');
+        if(video) video.pause();
+        doc.body.removeChild(overlay);
+        doc.removeEventListener('keydown', onKey);
+        if(trigger && trigger.isConnected) trigger.focus();
+      }
+      function onKey(e){ if(e.key==='Escape') remove(); }
+      overlay.addEventListener('click',(e)=>{ if(e.target===overlay) remove(); });
+      close.addEventListener('click', remove);
+      doc.addEventListener('keydown', onKey);
+      close.focus();
+    }
 
   // attach read-more handlers (delegated)
   doc.addEventListener('click', (e)=>{
     const a = e.target.closest('.read-more');
     if(!a) return;
     e.preventDefault();
-    // find data-id or fallback to nearest news-item content
     const id = a.dataset.id;
-    if(id && newsScript){
-      try{
-        const newsData = JSON.parse(newsScript.textContent);
-        const item = newsData.find(n=>String(n.id)===String(id));
-        if(item) return openNewsModal(item);
-      }catch(err){}
+    if(id){
+      const item = newsData.find(n=>String(n.id)===String(id));
+      if(item) return openNewsModal(item, a);
+      return;
     }
     // fallback: find nearest article DOM and build item from DOM
     const article = a.closest('.news-item');
     if(article){
-      const img = article.querySelector('.news-thumb');
+      const media = article.querySelector('.news-thumb');
       const title = article.querySelector('h3') ? article.querySelector('h3').textContent : '';
       const date = article.querySelector('.muted') ? article.querySelector('.muted').textContent : '';
       const summary = article.querySelector('p') ? article.querySelector('p').textContent : '';
-      openNewsModal({ image: img ? img.src : 'news-placeholder.jpg', title, date, summary });
+      const mediaIsVideo = media && media.tagName === 'VIDEO';
+      const newsItem = {
+        title,
+        date,
+        summary,
+        mediaType: mediaIsVideo ? 'video' : 'image',
+        content: `<p>${summary}</p>`
+      };
+      if(mediaIsVideo) newsItem.video = media.currentSrc || media.src;
+      else if(media) newsItem.image = media.currentSrc || media.src;
+      openNewsModal(newsItem, a);
     }
   });
 
