@@ -25,6 +25,13 @@ function onOpen() {
     .addToUi();
 }
 
+function authorizeDriveAccess() {
+  const folders = DriveApp.getFoldersByName('ER Dance News Media');
+  return folders.hasNext()
+    ? 'Drive access authorized. The existing ER Dance News Media folder was found.'
+    : 'Drive access authorized. No media folder exists yet; it will be created on the first upload.';
+}
+
 /**
  * Run this once from the bound spreadsheet or its Apps Script project.
  * It creates the News tab only if missing and never replaces existing rows.
